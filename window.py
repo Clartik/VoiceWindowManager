@@ -40,10 +40,24 @@ class WindowsManager:
         window.close()
         
         print(f'[WindowManager]: Closed `{window.title}` window!')
+        
+    @staticmethod
+    def restore(intent: WindowIntent):
+        if intent.action != 'restore':
+            return
+        
+        window = WindowsManager._get_window(intent.target)
+        
+        if not window:
+            return
+        
+        window.restore()
+        
+        print(f'[WindowManager]: Restored "{window.title}" window!')
             
     @staticmethod
     def minimize(intent: WindowIntent):
-        if intent.action != 'minimize':
+        if intent.action != 'dock' or intent.position != 'empty':
             return
         
         if intent.target != 'all':
@@ -53,8 +67,9 @@ class WindowsManager:
                 return
             
             window.minimize()
+            print(f"[WindowManager]: Minimized `{window.title}` window!")       
             
-            print(f"[WindowManager]: Minimized first `{intent.target}` window!")       
+            return window
         else:
             windows = pwc.getAllWindows()
             
@@ -62,12 +77,17 @@ class WindowsManager:
                 if window.isMinimized:
                     continue
                 
-                window.minimize()
+                try:
+                    window.minimize()
+                except Exception:
+                    pass
                 
             print("[WindowManager]: Minimized all windows!")       
+            
+            return None
 
     @staticmethod
-    def maximize(intent: WindowIntent):
+    def maximize(intent: WindowIntent, last_intent: WindowIntent, last_window):
         if intent.action != 'dock':
             return
         
@@ -76,20 +96,41 @@ class WindowsManager:
         
         if intent.target != 'all':
             window = WindowsManager._get_window(intent.target)
-            
+
             if not window:
-                return
-            
+                was_last_minimize = (
+                    last_intent is not None
+                    and last_intent.action == 'dock'
+                    and last_intent.position == 'empty'
+                )
+
+                if not was_last_minimize:
+                    print('[WindowManager]: No window found!')
+                    return None
+
+                if not last_window:
+                    print('[WindowManager]: No last window!')
+                    return None
+
+                last_window.maximize()
+                print(f'[WindowManager]: Restoring minimized "{last_window.title}" window!')
+
+                return last_window
+
             window.maximize()
-            
-            print(f"[WindowManager]: Maximized first `{intent.target}` window!")       
+            print(f"[WindowManager]: Maximized `{window.title}` window!")
+
+            return window
         else:
-            windows = pwc.getAllWindows()
-            
-            for window in windows:
+            for window in pwc.getAllWindows():
                 if window.isMaximized:
                     continue
-                
-                window.maximize()
-                
-            print("[WindowManager]: Maximized all windows!")     
+
+                try:
+                    window.maximize()
+                except Exception:
+                    pass
+
+            print("[WindowManager]: Maximized all windows!")
+
+            return None

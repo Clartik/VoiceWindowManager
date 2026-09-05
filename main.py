@@ -1,28 +1,26 @@
 from RealtimeSTT import AudioToTextRecorder
+from intent import parse_intent, WindowIntent
 
 import pywinctl as pwc
 
-def execute_command(command: str):
-    command = command.lower()
-    
-    if 'exit' in command:
+import sys
+
+def execute_intent(intent: WindowIntent):    
+    if intent.action == 'exit':
         print("Exiting program...")
-        exit()
-        
-    if 'find' in command:
-        window = pwc.getWindowsWithTitle()
+        sys.exit(0)
 
 if __name__ == "__main__":
     recorder = AudioToTextRecorder()
 
     print("\nSay 'Exit' to stop.\n")
 
-    last_command = ''
+    user_input = ''
 
     while True:
-        last_command = recorder.text()
-        print("[User]:", last_command)
+        user_input = recorder.text()
+        print("[User]:", user_input)
         
-        if 'exit' in last_command.lower():
-            break
+        intent = parse_intent(user_input)
+        execute_intent(intent)
     

@@ -10,10 +10,12 @@ NO_WORD_CASES =  ['no', 'nah', 'nope', 'cancel', 'nevermind']
 
 class VoiceAgent:
     def __init__(self):
-        self.recorder = AudioToTextRecorder()
+        self.recorder = AudioToTextRecorder(language='en')
+        
         self.is_running: bool = True
         
         self.intent: WindowIntent | None = None
+        self.last_intent: WindowIntent | None = None
         
         self.current_window = None
         
@@ -82,6 +84,7 @@ class VoiceAgent:
                 return
             
             ret = WindowsManager.close(self.intent)
+            self.last_intent = self.intent
             
             if ret is not None:
                 print(f'[WindowManager]: Are you sure you want to close "{ret.title}" window?')
@@ -90,13 +93,23 @@ class VoiceAgent:
                 
             return
         
-        if self.intent.action == 'minimize':
-            WindowsManager.minimize(self.intent)
+        if self.intent.action == 'restore':
+            WindowsManager.restore(self.intent)
             return
         
         if self.intent.action == 'dock':
+            if self.intent.position == 'empty':
+                ret = WindowsManager.minimize(self.intent)
+                self.last_intent = self.intent
+                self.current_window = ret
+
+                return
+
             if self.intent.position == 'full':
-                WindowsManager.maximize(self.intent)
+                ret = WindowsManager.maximize(self.intent, self.last_intent, self.current_window)
+                self.last_intent = self.intent
+                self.current_window = ret
+
                 return
 
         

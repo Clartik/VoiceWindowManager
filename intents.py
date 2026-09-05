@@ -7,7 +7,7 @@ class WindowIntent(BaseModel):
     action: Literal[
         "open",
         "close",
-        "minimize",
+        "restore",
         "move",
         "dock",
         "assign_desktop",
@@ -31,6 +31,7 @@ class WindowIntent(BaseModel):
         "top_right",
         "bottom_left",
         "bottom_right",
+        "empty",
         "full",
     ]] = None
     

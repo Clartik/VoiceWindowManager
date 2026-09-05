@@ -1,6 +1,8 @@
 from typing import Literal, Optional
 from pydantic import BaseModel
 
+import ollama
+
 class WindowIntent(BaseModel):
     action: Literal[
         "open",
@@ -31,3 +33,35 @@ class WindowIntent(BaseModel):
         "bottom_right",
         "full",
     ]] = None
+    
+SYSTEM_PROMPT_PATH = './prompts/system_prompt.md'
+    
+def parse_system_prompt() -> str:
+    with open(SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as file:
+        content = file.read()
+        
+        # Section 1 = Before Splitter, Section 2 = Metadata, Section 3 = System Prompt
+        sections = content.split('---')
+        
+        system_prompt = sections[2]
+        return system_prompt.strip()        # Remove empty whitespace for cleaner text
+    
+SYSTEM_PROMPT = parse_system_prompt()
+    
+def parse_intent(intent: str) -> WindowIntent:
+    response = ollama.chat(
+        model='llama3.2:3b',
+        format=WindowIntent.model_json_schema(),
+        messages=[
+            {
+                'role': 'system',
+                'content': SYSTEM_PROMPT
+            },
+            {
+                'role': "user",
+                "content": intent
+            }
+        ]
+    )
+    
+    return WindowIntent.model_validate_json(response.message.content)

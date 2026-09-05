@@ -10,7 +10,7 @@ NO_WORD_CASES =  ['no', 'nah', 'nope', 'cancel', 'nevermind']
 
 class VoiceAgent:
     def __init__(self):
-        self.recorder = AudioToTextRecorder(language='en')
+        self.recorder = AudioToTextRecorder(language='en', model='small', device='cuda', beam_size=5)
         
         self.is_running: bool = True
         

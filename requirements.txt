@@ -1,0 +1,4 @@
+pywinctl==0.4.1
+realtimestt==1.1.2
+ollama==0.6.2
+pydantic==2.13.5

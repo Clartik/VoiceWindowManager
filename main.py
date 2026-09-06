@@ -75,7 +75,7 @@ class VoiceAgent:
             print(intent)
             
             self.current_action = Action(input, intent)
-            
+
             self.execute_action()
             self.cleanup_action()
     
@@ -112,14 +112,16 @@ class VoiceAgent:
         
         elif intent.action == 'dock':
             if intent.position == 'empty':
-                ret = WindowsManager.minimize(intent, self.last_action)
-                
-                self.current_action.window = ret
+                self.current_action.window = WindowsManager.minimize(intent, self.last_action)
 
             elif intent.position == 'full':
-                ret = WindowsManager.maximize(intent, self.last_action)
+                self.current_action.window = WindowsManager.maximize(intent, self.last_action)
 
-                self.current_action.window = ret
+            elif intent.position == 'none':
+                return
+
+            WindowsManager.dock(intent)
+
 
         
 if __name__ == "__main__":    

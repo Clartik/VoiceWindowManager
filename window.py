@@ -1,8 +1,10 @@
 from typing import Optional
+from pywinctl._pywinctl_win import Win32Window
 
 import pywinctl as pwc
 
 from intents import WindowIntent
+from primitives import Action
 
 class WindowsManager:
     @staticmethod
@@ -20,7 +22,7 @@ class WindowsManager:
         return window
 
     @staticmethod
-    def close(intent: WindowIntent):
+    def close(intent: WindowIntent) -> Optional[Win32Window]:
         if intent.action != 'close':
             return
         
@@ -33,7 +35,7 @@ class WindowsManager:
         return window
         
     @staticmethod
-    def confirm_close(window):
+    def confirm_close(window: Win32Window) -> None:
         if not window.isAlive:
             return
         
@@ -42,29 +44,45 @@ class WindowsManager:
         print(f'[WindowManager]: Closed `{window.title}` window!')
         
     @staticmethod
-    def restore(intent: WindowIntent):
+    def restore(intent: WindowIntent, last_action: Optional[Action]) -> None:
         if intent.action != 'restore':
             return
-        
-        window = WindowsManager._get_window(intent.target)
-        
+
+        if not intent.target and last_action:
+            if last_action.intent.action == 'dock':
+                window = last_action.window
+            else:
+                window = WindowsManager._get_window(intent.target)
+        else:
+            window = WindowsManager._get_window(intent.target)
+
         if not window:
+            print('[WindowManager]: No window found!')
             return
         
         window.restore()
-        
         print(f'[WindowManager]: Restored "{window.title}" window!')
             
     @staticmethod
-    def minimize(intent: WindowIntent):
-        if intent.action != 'dock' or intent.position != 'empty':
-            return
+    def minimize(intent: WindowIntent, last_action: Optional[Action]) -> Optional[Win32Window]:
+        if intent.action != 'dock':
+            return None
+
+        if intent.position != 'empty':
+            return None
         
         if intent.target != 'all':
-            window = WindowsManager._get_window(intent.target)
+            if intent.target is None and last_action:
+                if last_action.intent.action == 'dock' and last_action.intent.position == 'empty':
+                    window = last_action.window
+                else:
+                    window = WindowsManager._get_window(intent.target)
+            else:
+                window = WindowsManager._get_window(intent.target)
             
             if not window:
-                return
+                print("[WindowManager]: Failed to find window!")
+                return None
             
             window.minimize()
             print(f"[WindowManager]: Minimized `{window.title}` window!")       
@@ -82,40 +100,29 @@ class WindowsManager:
                 except Exception:
                     pass
                 
-            print("[WindowManager]: Minimized all windows!")       
-            
+            print("[WindowManager]: Minimized all windows!")
             return None
 
     @staticmethod
-    def maximize(intent: WindowIntent, last_intent: WindowIntent, last_window):
+    def maximize(intent: WindowIntent, last_action: Optional[Action]) -> Optional[Win32Window]:
         if intent.action != 'dock':
-            return
+            return None
         
         if intent.position != 'full':
-            return
-        
+            return None
+
         if intent.target != 'all':
-            window = WindowsManager._get_window(intent.target)
+            if intent.target is None and last_action:
+                if last_action.intent.action == 'dock' and last_action.intent.position == 'empty':
+                    window = last_action.window
+                else:
+                    window = WindowsManager._get_window(intent.target)
+            else:
+                window = WindowsManager._get_window(intent.target)
 
             if not window:
-                was_last_minimize = (
-                    last_intent is not None
-                    and last_intent.action == 'dock'
-                    and last_intent.position == 'empty'
-                )
-
-                if not was_last_minimize:
-                    print('[WindowManager]: No window found!')
-                    return None
-
-                if not last_window:
-                    print('[WindowManager]: No last window!')
-                    return None
-
-                last_window.maximize()
-                print(f'[WindowManager]: Restoring minimized "{last_window.title}" window!')
-
-                return last_window
+                print("[WindowManager]: Failed to find window!")
+                return None
 
             window.maximize()
             print(f"[WindowManager]: Maximized `{window.title}` window!")
@@ -132,5 +139,4 @@ class WindowsManager:
                     pass
 
             print("[WindowManager]: Maximized all windows!")
-
             return None

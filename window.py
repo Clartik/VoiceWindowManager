@@ -49,11 +49,8 @@ class WindowsManager:
         if intent.action != 'restore':
             return
 
-        if not intent.target and last_action:
-            if last_action.intent.action == 'dock':
-                window = last_action.window
-            else:
-                window = WindowsManager._get_window(intent.target)
+        if not intent.target and last_action and last_action.intent.action == 'dock':
+            window = last_action.window
         else:
             window = WindowsManager._get_window(intent.target)
 
@@ -73,11 +70,8 @@ class WindowsManager:
             return None
         
         if intent.target != 'all':
-            if intent.target is None and last_action:
-                if last_action.intent.action == 'dock' and last_action.intent.position == 'empty':
-                    window = last_action.window
-                else:
-                    window = WindowsManager._get_window(intent.target)
+            if intent.target is None and last_action and last_action.intent.action == 'dock' and last_action.intent.position == 'full':
+                window = last_action.window
             else:
                 window = WindowsManager._get_window(intent.target)
             
@@ -113,11 +107,8 @@ class WindowsManager:
             return None
 
         if intent.target != 'all':
-            if intent.target is None and last_action:
-                if last_action.intent.action == 'dock' and last_action.intent.position == 'empty':
-                    window = last_action.window
-                else:
-                    window = WindowsManager._get_window(intent.target)
+            if intent.target is None and last_action and last_action.intent.action == 'dock' and last_action.intent.position == 'empty':
+                window = last_action.window
             else:
                 window = WindowsManager._get_window(intent.target)
 

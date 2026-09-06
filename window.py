@@ -1,4 +1,6 @@
 from typing import Optional
+
+from pymonctl import getAllMonitors, getPrimary
 from pywinctl._pywinctl_win import Win32Window
 
 import pywinctl as pwc
@@ -147,32 +149,69 @@ class WindowsManager:
             print('[WindowManager]: No window found!')
             return
 
-        monitor = pmc.getPrimary()
+        monitor: pmc.Monitor = pmc.getPrimary()
 
         mw, mh = monitor.size
         mx, my = monitor.position
 
+        window.restore()
+
+        half_width = mw // 2
+        half_height = mh // 2
+
+        hiddenFrameX = window.getExtraFrameSize()[0]
+        hiddenFrameY = window.getExtraFrameSize()[2]
+
         if intent.position == "left_half":
-            window.moveTo(mx, my)
-            window.resizeTo(mw // 2, mh)
+            window.moveTo(-hiddenFrameX, 0)
+            window.resizeTo(half_width + hiddenFrameX, mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to left half of screen!")
         elif intent.position == "right_half":
-            half_width = mw // 2
-
-            window.moveTo(mx + half_width, my)
-            window.resizeTo(half_width, mh)
+            window.moveTo(half_width - hiddenFrameX, 0)
+            window.resizeTo(half_width + hiddenFrameX, mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to right half of screen!")
         elif intent.position == "top_half":
-            pass
+            # window.moveTo(half_width - hiddenFrameX, 0)
+            # window.resizeTo(half_width + hiddenFrameX, mh)
+
+            print(f"[WindowManager]: Moved '{window.title}' to top half of screen!")
         elif intent.position == "bottom_half":
-            pass
+            half_height = mh // 2
+
+            window.moveTo(mx, my + half_height)
+            window.resizeTo(mw, half_height)
+
+            print(f"[WindowManager]: Moved '{window.title}' to bottom half of screen!")
         elif intent.position == "top_left":
-            pass
+            window.moveTo(mx, my)
+            window.resizeTo(mw // 2, mh // 2)
+
+            print(f"[WindowManager]: Moved '{window.title}' to top left of screen!")
         elif intent.position == "top_right":
-            pass
+            half_width = mw // 2
+
+            window.moveTo(mx + half_width, my)
+            window.resizeTo(half_width, mh // 2)
+
+            print(f"[WindowManager]: Moved '{window.title}' to top right of screen!")
         elif intent.position == "bottom_left":
             pass
         elif intent.position == "bottom_right":
             pass
+
+# window = pwc.getActiveWindow()
+# print(window.box)
+#
+# monitor = pmc.getAllMonitors()[1]
+#
+# print(monitor.size)
+# print(monitor.position)
+#
+# print(window.getExtraFrameSize(includeBorder=True))
+# print(window.getClientFrame())
+#
+# window.restore()
+# window.moveTo(monitor.position.x - 16, monitor.position.y)
+# window.resizeTo(monitor.size.width // 2 + 16, monitor.size.height)

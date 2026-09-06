@@ -2,6 +2,7 @@ from typing import Optional
 from pywinctl._pywinctl_win import Win32Window
 
 import pywinctl as pwc
+import pymonctl as pmc
 
 from intents import WindowIntent
 from primitives import Action
@@ -140,3 +141,47 @@ class WindowsManager:
 
             print("[WindowManager]: Maximized all windows!")
             return None
+
+    @staticmethod
+    def dock(intent: WindowIntent) -> None:
+        if intent.action != 'dock':
+            return
+
+        if intent.position == 'empty' or intent.position == 'full' or intent.position == 'none':
+            return
+
+        window = WindowsManager._get_window(intent.target)
+
+        if not window:
+            print('[WindowManager]: No window found!')
+            return
+
+        monitor = pmc.getPrimary()
+
+        mw, mh = monitor.size
+        mx, my = monitor.position
+
+        if intent.position == "left_half":
+            window.moveTo(mx, my)
+            window.resizeTo(mw // 2, mh)
+
+            print(f"[WindowManager]: Moved '{window.title}' to left half of screen!")
+        elif intent.position == "right_half":
+            half_width = mw // 2
+
+            window.moveTo(mx + half_width, my)
+            window.resizeTo(half_width, mh)
+
+            print(f"[WindowManager]: Moved '{window.title}' to right half of screen!")
+        elif intent.position == "top_half":
+            pass
+        elif intent.position == "bottom_half":
+            pass
+        elif intent.position == "top_left":
+            pass
+        elif intent.position == "top_right":
+            pass
+        elif intent.position == "bottom_left":
+            pass
+        elif intent.position == "bottom_right":
+            pass

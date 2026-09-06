@@ -48,7 +48,11 @@ class VoiceAgent:
             
         return input
         
-    def cleanup_action(self):        
+    def cleanup_action(self):
+        # Ignore cleanup if current action's confirmation is in-progress
+        if self.current_action.confirmation and self.current_action.confirmation.is_waiting:
+            return
+
         self.last_action = self.current_action
         self.current_action = None
         
@@ -105,7 +109,7 @@ class VoiceAgent:
                     print(f'[WindowManager]: Are you sure you want to close "{window.title}" window?')
                     
                     self.current_action.window = window
-                    self.current_action.is_awaiting_confirmation = True
+                    self.current_action.confirmation = Confirmation(is_waiting=True)
         
         elif intent.action == 'restore':
             WindowsManager.restore(intent, self.last_action)

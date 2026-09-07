@@ -172,18 +172,17 @@ class WindowsManager:
             window.resizeTo(half_width + hiddenFrameX, mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to right half of screen!")
-        elif intent.position == "top_half":
-            # window.moveTo(half_width - hiddenFrameX, 0)
-            # window.resizeTo(half_width + hiddenFrameX, mh)
-
-            print(f"[WindowManager]: Moved '{window.title}' to top half of screen!")
-        elif intent.position == "bottom_half":
-            half_height = mh // 2
-
-            window.moveTo(mx, my + half_height)
-            window.resizeTo(mw, half_height)
-
-            print(f"[WindowManager]: Moved '{window.title}' to bottom half of screen!")
+        # Revisit implementation. Currently encountering too many issues!
+        # elif intent.position == "top_half":
+        #     window.moveTo(-hiddenFrameX, 0)
+        #     window.resizeTo(mw + hiddenFrameX, half_height + hiddenFrameX)
+        #
+        #     print(f"[WindowManager]: Moved '{window.title}' to top half of screen!")
+        # elif intent.position == "bottom_half":
+        #     window.moveTo(-hiddenFrameX, half_height)
+        #     window.resizeTo(mw + hiddenFrameX, half_height + hiddenFrameY)
+        #
+        #     print(f"[WindowManager]: Moved '{window.title}' to bottom half of screen!")
         elif intent.position == "top_left":
             window.moveTo(mx, my)
             window.resizeTo(mw // 2, mh // 2)
@@ -201,17 +200,19 @@ class WindowsManager:
         elif intent.position == "bottom_right":
             pass
 
-# window = pwc.getActiveWindow()
-# print(window.box)
-#
-# monitor = pmc.getAllMonitors()[1]
-#
-# print(monitor.size)
-# print(monitor.position)
-#
-# print(window.getExtraFrameSize(includeBorder=True))
-# print(window.getClientFrame())
-#
+window = pwc.getActiveWindow()
+print(window.box)
+print(window.bottom)
+print(window.midbottom)
+
+monitor = pmc.getAllMonitors()[1]
+
+print(monitor.size)
+print(monitor.position)
+
+print(window.getExtraFrameSize())
+print(window.getClientFrame())
+
 # window.restore()
 # window.moveTo(monitor.position.x - 16, monitor.position.y)
 # window.resizeTo(monitor.size.width // 2 + 16, monitor.size.height)

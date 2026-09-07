@@ -25,8 +25,6 @@ class WindowIntent(BaseModel):
     position: Optional[Literal[
         "left_half",
         "right_half",
-        "top_half",
-        "bottom_half",
         "top_left",
         "top_right",
         "bottom_left",

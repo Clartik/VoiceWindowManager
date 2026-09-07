@@ -5,6 +5,7 @@ from pywinctl._pywinctl_win import Win32Window
 
 import pywinctl as pwc
 import pymonctl as pmc
+from sentry_sdk.monitor import Monitor
 
 from intents import WindowIntent
 from primitives import Action
@@ -149,27 +150,45 @@ class WindowsManager:
             print('[WindowManager]: No window found!')
             return
 
-        monitor: pmc.Monitor = pmc.getPrimary()
+        window.restore()
+
+        # Get monitor returns a list but usually contains only one
+        monitor_name_with_window: pmc.Monitor = window.getMonitor()[0]
+
+        monitor: Optional[Monitor] = None
+        for mon in pmc.getAllMonitors():
+            if mon.name != monitor_name_with_window:
+                continue
+
+            monitor = mon
+
+        if not monitor:
+            monitor = pmc.getPrimary()
 
         mw, mh = monitor.size
         mx, my = monitor.position
 
-        window.restore()
-
         half_width = mw // 2
         half_height = mh // 2
 
-        hiddenFrameX = window.getExtraFrameSize()[0]
-        hiddenFrameY = window.getExtraFrameSize()[2]
+        # Box = Left, Top, Right, Bottom
+        hiddenFrameX = window.getExtraFrameSize()[0]        # Targeting Left Value
+        hiddenFrameY = window.getExtraFrameSize()[1]        # Targeting Top Value
 
         if intent.position == "left_half":
-            window.moveTo(-hiddenFrameX, 0)
-            window.resizeTo(half_width + hiddenFrameX, mh)
+            # When docking to only half of screen, windows makes this offset 3 pixels smaller
+            hiddenFrameX = hiddenFrameX - 3
+
+            window.moveTo(mx - hiddenFrameX, my)
+            window.resizeTo(half_width + (hiddenFrameX * 2), mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to left half of screen!")
         elif intent.position == "right_half":
+            # When docking to only half of screen, windows makes this offset 3 pixels smaller
+            hiddenFrameX = hiddenFrameX - 3
+
             window.moveTo(half_width - hiddenFrameX, 0)
-            window.resizeTo(half_width + hiddenFrameX, mh)
+            window.resizeTo(half_width + (hiddenFrameX * 2), mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to right half of screen!")
         # Revisit implementation. Currently encountering too many issues!
@@ -200,18 +219,25 @@ class WindowsManager:
         elif intent.position == "bottom_right":
             pass
 
-window = pwc.getActiveWindow()
-print(window.box)
-print(window.bottom)
-print(window.midbottom)
+# window = pwc.getActiveWindow()
+# print(window.getDisplay())
+#
+# monitors: list[pmc.Monitor] = pmc.getAllMonitors()
+#
+# for monitor in monitors:
+#     print(monitor.name)
 
-monitor = pmc.getAllMonitors()[1]
-
-print(monitor.size)
-print(monitor.position)
-
-print(window.getExtraFrameSize())
-print(window.getClientFrame())
+# print(window.box)
+# print(window.bottom)
+# print(window.midbottom)
+#
+# monitor = pmc.getAllMonitors()[1]
+#
+# print(monitor.size)
+# print(monitor.position)
+#
+# print(window.getExtraFrameSize())
+# print(window.getClientFrame())
 
 # window.restore()
 # window.moveTo(monitor.position.x - 16, monitor.position.y)

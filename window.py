@@ -1,11 +1,9 @@
 from typing import Optional
 
-from pymonctl import getAllMonitors, getPrimary
 from pywinctl._pywinctl_win import Win32Window
 
 import pywinctl as pwc
 import pymonctl as pmc
-from sentry_sdk.monitor import Monitor
 
 from intents import WindowIntent
 from primitives import Action
@@ -28,7 +26,7 @@ class WindowsManager:
     @staticmethod
     def close(intent: WindowIntent) -> Optional[Win32Window]:
         if intent.action != 'close':
-            return
+            return None
         
         window = WindowsManager._get_window(intent.target)
         
@@ -153,9 +151,9 @@ class WindowsManager:
         window.restore()
 
         # Get monitor returns a list but usually contains only one
-        monitor_name_with_window: pmc.Monitor = window.getMonitor()[0]
+        monitor_name_with_window: str = window.getMonitor()[0]
 
-        monitor: Optional[Monitor] = None
+        monitor: Optional[pmc.Monitor] = None
         for mon in pmc.getAllMonitors():
             if mon.name != monitor_name_with_window:
                 continue
@@ -172,34 +170,34 @@ class WindowsManager:
         half_height = mh // 2
 
         # Box = Left, Top, Right, Bottom
-        hiddenFrameX = window.getExtraFrameSize()[0]        # Targeting Left Value
-        hiddenFrameY = window.getExtraFrameSize()[1]        # Targeting Top Value
+        hidden_frame_x = window.getExtraFrameSize()[0]        # Targeting Left Value
+        hidden_frame_y = window.getExtraFrameSize()[1]        # Targeting Top Value
 
         if intent.position == "left_half":
             # When docking to only half of screen, windows makes this offset 3 pixels smaller
-            hiddenFrameX = hiddenFrameX - 3
+            hidden_frame_x = hidden_frame_x - 3
 
-            window.moveTo(mx - hiddenFrameX, my)
-            window.resizeTo(half_width + (hiddenFrameX * 2), mh)
+            window.moveTo(mx - hidden_frame_x, my)
+            window.resizeTo(half_width + (hidden_frame_x * 2), mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to left half of screen!")
         elif intent.position == "right_half":
             # When docking to only half of screen, windows makes this offset 3 pixels smaller
-            hiddenFrameX = hiddenFrameX - 3
+            hidden_frame_x = hidden_frame_x - 3
 
-            window.moveTo(half_width - hiddenFrameX, 0)
-            window.resizeTo(half_width + (hiddenFrameX * 2), mh)
+            window.moveTo(half_width - hidden_frame_x, 0)
+            window.resizeTo(half_width + (hidden_frame_x * 2), mh)
 
             print(f"[WindowManager]: Moved '{window.title}' to right half of screen!")
         # Revisit implementation. Currently encountering too many issues!
         # elif intent.position == "top_half":
-        #     window.moveTo(-hiddenFrameX, 0)
-        #     window.resizeTo(mw + hiddenFrameX, half_height + hiddenFrameX)
+        #     window.moveTo(-hidden_frame_x, 0)
+        #     window.resizeTo(mw + hidden_frame_x, half_height + hidden_frame_x)
         #
         #     print(f"[WindowManager]: Moved '{window.title}' to top half of screen!")
         # elif intent.position == "bottom_half":
-        #     window.moveTo(-hiddenFrameX, half_height)
-        #     window.resizeTo(mw + hiddenFrameX, half_height + hiddenFrameY)
+        #     window.moveTo(-hidden_frame_x, half_height)
+        #     window.resizeTo(mw + hidden_frame_x, half_height + hidden_frame_y)
         #
         #     print(f"[WindowManager]: Moved '{window.title}' to bottom half of screen!")
         elif intent.position == "top_left":
@@ -218,27 +216,3 @@ class WindowsManager:
             pass
         elif intent.position == "bottom_right":
             pass
-
-# window = pwc.getActiveWindow()
-# print(window.getDisplay())
-#
-# monitors: list[pmc.Monitor] = pmc.getAllMonitors()
-#
-# for monitor in monitors:
-#     print(monitor.name)
-
-# print(window.box)
-# print(window.bottom)
-# print(window.midbottom)
-#
-# monitor = pmc.getAllMonitors()[1]
-#
-# print(monitor.size)
-# print(monitor.position)
-#
-# print(window.getExtraFrameSize())
-# print(window.getClientFrame())
-
-# window.restore()
-# window.moveTo(monitor.position.x - 16, monitor.position.y)
-# window.resizeTo(monitor.size.width // 2 + 16, monitor.size.height)
